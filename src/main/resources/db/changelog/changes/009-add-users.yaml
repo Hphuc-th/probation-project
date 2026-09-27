@@ -1,0 +1,78 @@
+databaseChangeLog:
+  - changeSet:
+      id: 013-create-users-table
+      author: phuch
+      changes:
+        - createTable:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: username
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: password
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: role
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: customer_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+        - addForeignKeyConstraint:
+            baseTableName: users
+            baseColumnNames: customer_id
+            constraintName: fk_users_customer
+            referencedTableName: customers
+            referencedColumnNames: id
+            onDelete: SET NULL
+      rollback:
+        - dropTable:
+            tableName: users
+
+  - changeSet:
+      id: 014-insert-admin-user
+      author: phuch
+      changes:
+        - insert:
+            tableName: users
+            columns:
+              - column: { name: username, value: "admin" }
+              - column: { name: password, value: "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy" }
+              - column: { name: role, value: "ADMIN" }
+              - column: { name: customer_id, value: null }
+      rollback:
+        - delete:
+            tableName: users
+            whereClause: username = 'admin'
+
+  - changeSet:
+      id: 015-insert-customer-user
+      author: phuch
+      changes:
+        - insert:
+            tableName: users
+            columns:
+              - column: { name: username, value: "customer1" }
+              - column: { name: password, value: "$2a$10$8.UnVuG9HHgffUDAlj8UfOu70rJl5YT0G7vI5uY6dJZ.N4Yq8j6Ga" }
+              - column: { name: role, value: "CUSTOMER" }
+              - column: { name: customer_id, valueNumeric: 1 }
+      rollback:
+        - delete:
+            tableName: users
+            whereClause: username = 'customer1'

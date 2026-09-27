@@ -1,0 +1,33 @@
+databaseChangeLog:
+  - changeSet:
+      id: 009-drop-unnecessary-indexes
+      author: phuch
+      changes:
+        - dropIndex:
+            tableName: customers
+            indexName: idx_customers_full_name
+        - dropIndex:
+            tableName: accounts
+            indexName: idx_accounts_status
+        - dropIndex:
+            tableName: accounts
+            indexName: idx_accounts_account_type
+      rollback:
+        - createIndex:
+            tableName: customers
+            indexName: idx_customers_full_name
+            columns:
+              - column:
+                  name: full_name
+        - createIndex:
+            tableName: accounts
+            indexName: idx_accounts_status
+            columns:
+              - column:
+                  name: status
+        - createIndex:
+            tableName: accounts
+            indexName: idx_accounts_account_type
+            columns:
+              - column:
+                  name: account_type

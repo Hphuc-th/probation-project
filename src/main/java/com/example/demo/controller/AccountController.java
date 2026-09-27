@@ -1,0 +1,80 @@
+package com.example.demo.controller;
+
+import com.example.demo.dto.request.account.ChangeAccountStatusRequest;
+import com.example.demo.dto.request.account.CreateAccountRequest;
+import com.example.demo.dto.request.account.UpdateAccountRequest;
+import com.example.demo.dto.response.AccountResponse;
+import com.example.demo.dto.response.AccountStatusHistoryResponse;
+import com.example.demo.dto.response.ApiResponse;
+import com.example.demo.dto.response.PageResponse;
+import com.example.demo.entity.enums.AccountStatus;
+import com.example.demo.entity.enums.AccountType;
+import com.example.demo.service.AccountService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/v1/accounts")
+@RequiredArgsConstructor
+public class AccountController {
+
+    private final AccountService accountService;
+
+    @GetMapping
+    public ApiResponse<PageResponse<AccountResponse>> search(
+            @RequestParam(required = false) String accountNumber,
+            @RequestParam(required = false) Long customerId,
+            @RequestParam(required = false) String cccd,
+            @RequestParam(required = false) AccountStatus status,
+            @RequestParam(required = false) AccountType accountType,
+            @PageableDefault(size = 20, sort = "openedAt") Pageable pageable) {
+        Page<AccountResponse> page = accountService.searchAccounts(accountNumber, customerId, cccd, status,
+                accountType, pageable);
+        return ApiResponse.ok(PageResponse.from(page));
+    }
+
+    @GetMapping("/{id}")
+    public ApiResponse<AccountResponse> getById(@PathVariable Long id) {
+        return ApiResponse.ok(accountService.getAccountById(id));
+    }
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<AccountResponse> create(@Valid @RequestBody CreateAccountRequest request) {
+        return ApiResponse.created(accountService.createAccount(request));
+    }
+
+    @PutMapping("/{id}")
+    public ApiResponse<AccountResponse> update(@PathVariable Long id,
+                                               @Valid @RequestBody UpdateAccountRequest request) {
+        return ApiResponse.ok(accountService.updateAccount(id, request));
+    }
+
+    @PatchMapping("/{id}/status")
+    public ApiResponse<AccountStatusHistoryResponse> changeStatus(
+            @PathVariable Long id,
+            @Valid @RequestBody ChangeAccountStatusRequest request) {
+        return ApiResponse.ok(accountService.changeStatus(id, request));
+    }
+
+    @GetMapping("/{id}/status-history")
+    public ApiResponse<List<AccountStatusHistoryResponse>> getStatusHistory(@PathVariable Long id) {
+        return ApiResponse.ok(accountService.getStatusHistory(id));
+    }
+}

@@ -1,0 +1,27 @@
+databaseChangeLog:
+  - changeSet:
+      id: 013-add-customer-cccd
+      author: phuch
+      changes:
+        - addColumn:
+            tableName: customers
+            columns:
+              - column:
+                  name: cccd
+                  type: VARCHAR(12)
+        - sql:
+            sql: "UPDATE customers SET cccd = LPAD(id, 12, '0') WHERE cccd IS NULL"
+        - addNotNullConstraint:
+            tableName: customers
+            columnName: cccd
+        - addUniqueConstraint:
+            tableName: customers
+            columnNames: cccd
+            constraintName: uk_customers_cccd
+      rollback:
+        - dropUniqueConstraint:
+            tableName: customers
+            constraintName: uk_customers_cccd
+        - dropColumn:
+            tableName: customers
+            columnName: cccd

@@ -1,0 +1,183 @@
+databaseChangeLog:
+  - changeSet:
+      id: 016-create-roles-table
+      author: phuch
+      changes:
+        - createTable:
+            tableName: roles
+            columns:
+              - column:
+                  name: role_id
+                  type: INT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: authority
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+                    unique: true
+      rollback:
+        - dropTable:
+            tableName: roles
+
+  - changeSet:
+      id: 017-insert-default-roles
+      author: phuch
+      changes:
+        - insert:
+            tableName: roles
+            columns:
+              - column: { name: authority, value: "ADMIN" }
+        - insert:
+            tableName: roles
+            columns:
+              - column: { name: authority, value: "CUSTOMER" }
+      rollback:
+        - delete:
+            tableName: roles
+            whereClause: authority IN ('ADMIN', 'CUSTOMER')
+
+  - changeSet:
+      id: 018-create-user-roles-table
+      author: phuch
+      changes:
+        - createTable:
+            tableName: user_roles
+            columns:
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: role_id
+                  type: INT
+                  constraints:
+                    nullable: false
+        - addPrimaryKey:
+            tableName: user_roles
+            columnNames: user_id, role_id
+            constraintName: pk_user_roles
+        - addForeignKeyConstraint:
+            baseTableName: user_roles
+            baseColumnNames: user_id
+            constraintName: fk_user_roles_user
+            referencedTableName: users
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            baseTableName: user_roles
+            baseColumnNames: role_id
+            constraintName: fk_user_roles_role
+            referencedTableName: roles
+            referencedColumnNames: role_id
+            onDelete: CASCADE
+      rollback:
+        - dropTable:
+            tableName: user_roles
+
+  - changeSet:
+      id: 019-add-enabled-column-to-users
+      author: phuch
+      changes:
+        - addColumn:
+            tableName: users
+            columns:
+              - column:
+                  name: enabled
+                  type: BOOLEAN
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+      rollback:
+        - dropColumn:
+            tableName: users
+            columnName: enabled
+
+  - changeSet:
+      id: 020-migrate-users-to-user-roles
+      author: phuch
+      changes:
+        - sql:
+            sql: |
+              INSERT INTO user_roles (user_id, role_id)
+              SELECT u.id, r.role_id
+              FROM users u
+              JOIN roles r ON r.authority = u.role
+              WHERE u.role IS NOT NULL;
+        - dropColumn:
+            tableName: users
+            columnName: role
+      rollback:
+        - addColumn:
+            tableName: users
+            columns:
+              - column:
+                  name: role
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+        - sql:
+            sql: |
+              UPDATE users u
+              SET u.role = (
+                SELECT r.authority
+                FROM user_roles ur
+                JOIN roles r ON r.role_id = ur.role_id
+                WHERE ur.user_id = u.id
+                LIMIT 1
+              );
+
+  - changeSet:
+      id: 021-drop-refresh-tokens-table
+      author: phuch
+      changes:
+        - dropTable:
+            tableName: refresh_tokens
+      rollback:
+        - createTable:
+            tableName: refresh_tokens
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: token_hash
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: expires_at
+                  type: DATETIME
+                  constraints:
+                    nullable: false
+              - column:
+                  name: revoked
+                  type: BOOLEAN
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: DATETIME
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: refresh_tokens
+            baseColumnNames: user_id
+            constraintName: fk_refresh_tokens_user
+            referencedTableName: users
+            referencedColumnNames: id
+            onDelete: CASCADE

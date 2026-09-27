@@ -1,0 +1,158 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005-insert-sample-customers
+      author: phuch
+      changes:
+        - insert:
+            tableName: customers
+            columns:
+              - column: { name: id, valueNumeric: 1 }
+              - column: { name: full_name, value: "Nguyen Van A" }
+              - column: { name: email, value: "nguyenvana@example.com" }
+              - column: { name: phone, value: "0901234567" }
+              - column: { name: location, value: "Ha Noi" }
+              - column: { name: created_at, value: "2026-01-01T08:00:00" }
+        - insert:
+            tableName: customers
+            columns:
+              - column: { name: id, valueNumeric: 2 }
+              - column: { name: full_name, value: "Tran Thi B" }
+              - column: { name: email, value: "tranthib@example.com" }
+              - column: { name: phone, value: "0912345678" }
+              - column: { name: location, value: "Da Nang" }
+              - column: { name: created_at, value: "2026-01-02T09:30:00" }
+        - insert:
+            tableName: customers
+            columns:
+              - column: { name: id, valueNumeric: 3 }
+              - column: { name: full_name, value: "Le Van C" }
+              - column: { name: email, value: "levanc@example.com" }
+              - column: { name: phone, value: "0923456789" }
+              - column: { name: location, value: "Ho Chi Minh" }
+              - column: { name: created_at, value: "2026-01-03T14:15:00" }
+      rollback:
+        - delete:
+            tableName: customers
+            whereClause: id in (1, 2, 3)
+
+  - changeSet:
+      id: 006-insert-sample-accounts
+      author: phuch
+      changes:
+        - insert:
+            tableName: accounts
+            columns:
+              - column: { name: id, valueNumeric: 1 }
+              - column: { name: account_number, value: "ACC00000001" }
+              - column: { name: customer_id, valueNumeric: 1 }
+              - column: { name: balance, valueNumeric: 15000000.00 }
+              - column: { name: account_type, value: "HIGH" }
+              - column: { name: transaction_limit, valueNumeric: 100000000.00 }
+              - column: { name: opened_at, value: "2026-01-01T08:30:00" }
+              - column: { name: status, value: "ACTIVE" }
+        - insert:
+            tableName: accounts
+            columns:
+              - column: { name: id, valueNumeric: 2 }
+              - column: { name: account_number, value: "ACC00000002" }
+              - column: { name: customer_id, valueNumeric: 1 }
+              - column: { name: balance, valueNumeric: 2500000.00 }
+              - column: { name: account_type, value: "MEDIUM" }
+              - column: { name: transaction_limit, valueNumeric: 50000000.00 }
+              - column: { name: opened_at, value: "2026-01-01T08:45:00" }
+              - column: { name: status, value: "ACTIVE" }
+        - insert:
+            tableName: accounts
+            columns:
+              - column: { name: id, valueNumeric: 3 }
+              - column: { name: account_number, value: "ACC00000003" }
+              - column: { name: customer_id, valueNumeric: 2 }
+              - column: { name: balance, valueNumeric: 8000000.00 }
+              - column: { name: account_type, value: "LOW" }
+              - column: { name: transaction_limit, valueNumeric: 10000000.00 }
+              - column: { name: opened_at, value: "2026-01-02T10:00:00" }
+              - column: { name: status, value: "ACTIVE" }
+        - insert:
+            tableName: accounts
+            columns:
+              - column: { name: id, valueNumeric: 4 }
+              - column: { name: account_number, value: "ACC00000004" }
+              - column: { name: customer_id, valueNumeric: 3 }
+              - column: { name: balance, valueNumeric: 0.00 }
+              - column: { name: account_type, value: "MEDIUM" }
+              - column: { name: transaction_limit, valueNumeric: 50000000.00 }
+              - column: { name: opened_at, value: "2026-01-03T15:00:00" }
+              - column: { name: status, value: "BLOCKED" }
+      rollback:
+        - delete:
+            tableName: accounts
+            whereClause: id in (1, 2, 3, 4)
+
+  - changeSet:
+      id: 007-insert-sample-transactions
+      author: phuch
+      changes:
+        - insert:
+            tableName: transactions
+            columns:
+              - column: { name: id, valueNumeric: 1 }
+              - column: { name: account_id, valueNumeric: 1 }
+              - column: { name: amount, valueNumeric: 10000000.00 }
+              - column: { name: transaction_type, value: "DEPOSIT" }
+              - column: { name: fee, valueNumeric: 0.00 }
+              - column: { name: location, value: "ATM Ha Noi" }
+              - column: { name: created_at, value: "2026-01-01T09:00:00" }
+        - insert:
+            tableName: transactions
+            columns:
+              - column: { name: id, valueNumeric: 2 }
+              - column: { name: account_id, valueNumeric: 1 }
+              - column: { name: amount, valueNumeric: 5000000.00 }
+              - column: { name: transaction_type, value: "DEPOSIT" }
+              - column: { name: fee, valueNumeric: 0.00 }
+              - column: { name: location, value: "App" }
+              - column: { name: created_at, value: "2026-01-05T10:30:00" }
+        - insert:
+            tableName: transactions
+            columns:
+              - column: { name: id, valueNumeric: 3 }
+              - column: { name: account_id, valueNumeric: 2 }
+              - column: { name: amount, valueNumeric: 3000000.00 }
+              - column: { name: transaction_type, value: "DEPOSIT" }
+              - column: { name: fee, valueNumeric: 0.00 }
+              - column: { name: location, value: "Transfer from ACC00000001" }
+              - column: { name: created_at, value: "2026-01-06T11:00:00" }
+        - insert:
+            tableName: transactions
+            columns:
+              - column: { name: id, valueNumeric: 4 }
+              - column: { name: account_id, valueNumeric: 1 }
+              - column: { name: amount, valueNumeric: 500000.00 }
+              - column: { name: transaction_type, value: "WITHDRAW" }
+              - column: { name: fee, valueNumeric: 1000.00 }
+              - column: { name: location, value: "ATM Da Nang" }
+              - column: { name: created_at, value: "2026-01-07T16:45:00" }
+        - insert:
+            tableName: transactions
+            columns:
+              - column: { name: id, valueNumeric: 5 }
+              - column: { name: account_id, valueNumeric: 3 }
+              - column: { name: amount, valueNumeric: 8000000.00 }
+              - column: { name: transaction_type, value: "DEPOSIT" }
+              - column: { name: fee, valueNumeric: 0.00 }
+              - column: { name: location, value: "Counter HCM" }
+              - column: { name: created_at, value: "2026-01-03T15:30:00" }
+        - insert:
+            tableName: transactions
+            columns:
+              - column: { name: id, valueNumeric: 6 }
+              - column: { name: account_id, valueNumeric: 3 }
+              - column: { name: amount, valueNumeric: 2000000.00 }
+              - column: { name: transaction_type, value: "TRANSFER" }
+              - column: { name: fee, valueNumeric: 2000.00 }
+              - column: { name: location, value: "App" }
+              - column: { name: created_at, value: "2026-01-08T09:20:00" }
+      rollback:
+        - delete:
+            tableName: transactions
+            whereClause: id in (1, 2, 3, 4, 5, 6)

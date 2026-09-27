@@ -1,0 +1,18 @@
+databaseChangeLog:
+  - changeSet:
+      id: 012-add-customer-status
+      author: phuch
+      changes:
+        - addColumn:
+            tableName: customers
+            columns:
+              - column:
+                  name: status
+                  type: VARCHAR(255)
+                  defaultValue: ACTIVE
+                  constraints:
+                    nullable: false
+      rollback:
+        - dropColumn:
+            tableName: customers
+            columnName: status

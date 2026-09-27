@@ -1,0 +1,125 @@
+databaseChangeLog:
+  - changeSet:
+      id: 016-create-recurring-transactions-table
+      author: phuch
+      changes:
+        - createTable:
+            tableName: recurring_transactions
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: account_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: to_account_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+              - column:
+                  name: transaction_type
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: amount
+                  type: DECIMAL(19,2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: fee
+                  type: DECIMAL(19,2)
+                  defaultValue: 0.00
+                  constraints:
+                    nullable: false
+              - column:
+                  name: location
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: cron_expression
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+                  defaultValue: ACTIVE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: next_run_at
+                  type: DATETIME
+                  constraints:
+                    nullable: true
+              - column:
+                  name: last_run_at
+                  type: DATETIME
+                  constraints:
+                    nullable: true
+              - column:
+                  name: last_error
+                  type: VARCHAR(500)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: consecutive_failures
+                  type: INT
+                  defaultValue: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: DATETIME
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: recurring_transactions
+            baseColumnNames: account_id
+            constraintName: fk_recurring_account
+            referencedTableName: accounts
+            referencedColumnNames: id
+            onDelete: RESTRICT
+        - addForeignKeyConstraint:
+            baseTableName: recurring_transactions
+            baseColumnNames: to_account_id
+            constraintName: fk_recurring_to_account
+            referencedTableName: accounts
+            referencedColumnNames: id
+            onDelete: SET NULL
+      rollback:
+        - dropTable:
+            tableName: recurring_transactions
+
+  - changeSet:
+      id: 017-insert-sample-recurring
+      author: phuch
+      changes:
+        - insert:
+            tableName: recurring_transactions
+            columns:
+              - column: { name: account_id, valueNumeric: 1 }
+              - column: { name: to_account_id, value: null }
+              - column: { name: transaction_type, value: "DEPOSIT" }
+              - column: { name: amount, valueNumeric: 500000.00 }
+              - column: { name: fee, valueNumeric: 0.00 }
+              - column: { name: location, value: "Auto deposit" }
+              - column: { name: cron_expression, value: "0 0 8 1 * *" }
+              - column: { name: status, value: "ACTIVE" }
+              - column: { name: next_run_at, value: null }
+              - column: { name: last_run_at, value: null }
+              - column: { name: last_error, value: null }
+              - column: { name: consecutive_failures, valueNumeric: 0 }
+              - column: { name: created_at, value: "2026-01-01T08:00:00" }
+      rollback:
+        - delete:
+            tableName: recurring_transactions
+            whereClause: transaction_type = 'DEPOSIT' AND cron_expression = '0 0 8 1 * *'

@@ -1,0 +1,191 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-customers
+      author: phuch
+      changes:
+        - createTable:
+            tableName: customers
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_customers
+                    nullable: false
+              - column:
+                  name: full_name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: email
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+                    uniqueConstraintName: uk_customers_email
+              - column:
+                  name: phone
+                  type: VARCHAR(255)
+              - column:
+                  name: location
+                  type: VARCHAR(255)
+              - column:
+                  name: created_at
+                  type: DATETIME(6)
+                  constraints:
+                    nullable: false
+      rollback:
+        - dropTable:
+            tableName: customers
+
+  - changeSet:
+      id: 002-create-accounts
+      author: phuch
+      changes:
+        - createTable:
+            tableName: accounts
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_accounts
+                    nullable: false
+              - column:
+                  name: account_number
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+                    uniqueConstraintName: uk_accounts_account_number
+              - column:
+                  name: customer_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_accounts_customer
+                    references: customers(id)
+              - column:
+                  name: balance
+                  type: DECIMAL(19,2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: account_type
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: transaction_limit
+                  type: DECIMAL(19,2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: opened_at
+                  type: DATETIME(6)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+      rollback:
+        - dropTable:
+            tableName: accounts
+
+  - changeSet:
+      id: 003-create-transactions
+      author: phuch
+      changes:
+        - createTable:
+            tableName: transactions
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_transactions
+                    nullable: false
+              - column:
+                  name: account_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_transactions_account
+                    references: accounts(id)
+              - column:
+                  name: amount
+                  type: DECIMAL(19,2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: transaction_type
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: fee
+                  type: DECIMAL(19,2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: location
+                  type: VARCHAR(255)
+              - column:
+                  name: created_at
+                  type: DATETIME(6)
+                  constraints:
+                    nullable: false
+      rollback:
+        - dropTable:
+            tableName: transactions
+
+  - changeSet:
+      id: 004-create-indexes
+      author: phuch
+      changes:
+        - createIndex:
+            tableName: customers
+            indexName: idx_customers_email
+            columns:
+              - column:
+                  name: email
+        - createIndex:
+            tableName: accounts
+            indexName: idx_accounts_account_number
+            columns:
+              - column:
+                  name: account_number
+        - createIndex:
+            tableName: accounts
+            indexName: idx_accounts_customer_id
+            columns:
+              - column:
+                  name: customer_id
+        - createIndex:
+            tableName: transactions
+            indexName: idx_transactions_account_id
+            columns:
+              - column:
+                  name: account_id
+      rollback:
+        - dropIndex:
+            tableName: customers
+            indexName: idx_customers_email
+        - dropIndex:
+            tableName: accounts
+            indexName: idx_accounts_account_number
+        - dropIndex:
+            tableName: accounts
+            indexName: idx_accounts_customer_id
+        - dropIndex:
+            tableName: transactions
+            indexName: idx_transactions_account_id

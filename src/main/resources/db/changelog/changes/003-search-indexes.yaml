@@ -1,0 +1,78 @@
+databaseChangeLog:
+  - changeSet:
+      id: 008-create-search-indexes
+      author: phuch
+      changes:
+        - createIndex:
+            tableName: customers
+            indexName: idx_customers_full_name
+            columns:
+              - column:
+                  name: full_name
+        - createIndex:
+            tableName: customers
+            indexName: idx_customers_location
+            columns:
+              - column:
+                  name: location
+        - createIndex:
+            tableName: accounts
+            indexName: idx_accounts_status
+            columns:
+              - column:
+                  name: status
+        - createIndex:
+            tableName: accounts
+            indexName: idx_accounts_account_type
+            columns:
+              - column:
+                  name: account_type
+        - createIndex:
+            tableName: accounts
+            indexName: idx_accounts_balance
+            columns:
+              - column:
+                  name: balance
+        - createIndex:
+            tableName: transactions
+            indexName: idx_transactions_transaction_type
+            columns:
+              - column:
+                  name: transaction_type
+        - createIndex:
+            tableName: transactions
+            indexName: idx_transactions_created_at
+            columns:
+              - column:
+                  name: created_at
+        - createIndex:
+            tableName: transactions
+            indexName: idx_transactions_amount
+            columns:
+              - column:
+                  name: amount
+      rollback:
+        - dropIndex:
+            tableName: customers
+            indexName: idx_customers_full_name
+        - dropIndex:
+            tableName: customers
+            indexName: idx_customers_location
+        - dropIndex:
+            tableName: accounts
+            indexName: idx_accounts_status
+        - dropIndex:
+            tableName: accounts
+            indexName: idx_accounts_account_type
+        - dropIndex:
+            tableName: accounts
+            indexName: idx_accounts_balance
+        - dropIndex:
+            tableName: transactions
+            indexName: idx_transactions_transaction_type
+        - dropIndex:
+            tableName: transactions
+            indexName: idx_transactions_created_at
+        - dropIndex:
+            tableName: transactions
+            indexName: idx_transactions_amount
