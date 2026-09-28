@@ -1,0 +1,80 @@
+databaseChangeLog:
+  - changeSet:
+      id: 022-migrate-to-role-enum
+      author: phuch
+      changes:
+        - addColumn:
+            tableName: users
+            columns:
+              - column:
+                  name: role
+                  type: VARCHAR(20)
+                  defaultValue: "CUSTOMER"
+                  constraints:
+                    nullable: false
+        - sql:
+            sql: |
+              UPDATE users u
+              SET u.role = (
+                SELECT r.authority
+                FROM user_roles ur
+                JOIN roles r ON r.role_id = ur.role_id
+                WHERE ur.user_id = u.id
+                LIMIT 1
+              )
+              WHERE u.role IS NULL OR u.role = '';
+        - dropTable:
+            tableName: user_roles
+        - dropTable:
+            tableName: roles
+      rollback:
+        - createTable:
+            tableName: roles
+            columns:
+              - column:
+                  name: role_id
+                  type: INT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: authority
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+                    unique: true
+        - createTable:
+            tableName: user_roles
+            columns:
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: role_id
+                  type: INT
+                  constraints:
+                    nullable: false
+        - addPrimaryKey:
+            tableName: user_roles
+            columnNames: user_id, role_id
+            constraintName: pk_user_roles
+        - addForeignKeyConstraint:
+            baseTableName: user_roles
+            baseColumnNames: user_id
+            constraintName: fk_user_roles_user
+            referencedTableName: users
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            baseTableName: user_roles
+            baseColumnNames: role_id
+            constraintName: fk_user_roles_role
+            referencedTableName: roles
+            referencedColumnNames: role_id
+            onDelete: CASCADE
+        - dropColumn:
+            tableName: users
+            columnName: role

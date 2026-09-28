@@ -9,6 +9,7 @@ public final class SecurityUtils {
     private SecurityUtils() {}
 
     public static Authentication getAuthentication() {
+        //get user information 
         return SecurityContextHolder.getContext().getAuthentication();
     }
 

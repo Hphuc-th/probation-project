@@ -4,32 +4,29 @@ import com.example.demo.dto.request.account.CreateAccountRequest;
 import com.example.demo.dto.response.AccountResponse;
 import com.example.demo.entity.Account;
 import com.example.demo.entity.enums.AccountStatus;
-import org.springframework.stereotype.Component;
+import org.mapstruct.AfterMapping;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
-@Component
-public class AccountMapper {
+@Mapper(componentModel = "spring")
+public interface AccountMapper {
 
-    public AccountResponse toResponse(Account account) {
-        return AccountResponse.builder()
-                .id(account.getId())
-                .accountNumber(account.getAccountNumber())
-                .customerId(account.getCustomer() != null ? account.getCustomer().getId() : null)
-                .balance(account.getBalance())
-                .accountType(account.getAccountType() != null ? account.getAccountType().name() : null)
-                .transactionLimit(account.getTransactionLimit())
-                .status(account.getStatus() != null ? account.getStatus().name() : null)
-                .openedAt(account.getOpenedAt())
-                .build();
-    }
+    @Mapping(target = "customerId", source = "customer.id")
+    @Mapping(target = "accountType", source = "accountType")
+    @Mapping(target = "status", source = "status")
+    AccountResponse toResponse(Account account);
 
-    public Account toEntity(CreateAccountRequest request) {
-        Account account = new Account();
-        account.setAccountNumber(request.getAccountNumber());
-        account.setBalance(request.getBalance());
-        account.setAccountType(request.getAccountType());
-        account.setTransactionLimit(request.getTransactionLimit());
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "customer", ignore = true)
+    @Mapping(target = "openedAt", ignore = true)
+    @Mapping(target = "status", ignore = true)
+    @Mapping(target = "transactions", ignore = true)
+    Account toEntity(CreateAccountRequest request);
+
+    @AfterMapping
+    default void setDefaults(CreateAccountRequest request, @MappingTarget Account account) {
         account.setStatus(AccountStatus.ACTIVE);
         account.setOpenedAt(java.time.LocalDateTime.now());
-        return account;
     }
 }

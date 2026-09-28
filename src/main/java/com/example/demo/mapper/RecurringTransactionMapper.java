@@ -5,7 +5,6 @@ import com.example.demo.dto.request.recurring.UpdateRecurringTransactionRequest;
 import com.example.demo.dto.response.RecurringTransactionResponse;
 import com.example.demo.entity.Account;
 import com.example.demo.entity.RecurringTransaction;
-import com.example.demo.entity.enums.TransactionType;
 import org.springframework.stereotype.Component;
 
 @Component

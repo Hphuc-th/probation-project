@@ -4,29 +4,18 @@ import com.example.demo.dto.response.AccountStatusHistoryResponse;
 import com.example.demo.entity.Account;
 import com.example.demo.entity.AccountStatusHistory;
 import com.example.demo.entity.enums.AccountStatus;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 
-@Component
-public class AccountHistoryMapper {
+@Mapper(componentModel = "spring")
+public interface AccountHistoryMapper {
 
-    public AccountStatusHistoryResponse toResponse(AccountStatusHistory history) {
-        return AccountStatusHistoryResponse.builder()
-                .id(history.getId())
-                .accountId(history.getAccount() != null ? history.getAccount().getId() : null)
-                .previousStatus(history.getPreviousStatus() != null ? history.getPreviousStatus().name() : null)
-                .newStatus(history.getNewStatus() != null ? history.getNewStatus().name() : null)
-                .reason(history.getReason())
-                .changedAt(history.getChangedAt())
-                .build();
-    }
+    @Mapping(target = "accountId", source = "account.id")
+    AccountStatusHistoryResponse toResponse(AccountStatusHistory history);
 
-    public AccountStatusHistory toEntity(Account account, AccountStatus previousStatus,
-                                          AccountStatus newStatus, String reason) {
-        AccountStatusHistory history = new AccountStatusHistory();
-        history.setAccount(account);
-        history.setPreviousStatus(previousStatus);
-        history.setNewStatus(newStatus);
-        history.setReason(reason);
-        return history;
-    }
+    @Named("toEntity")
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "changedAt", ignore = true)
+    AccountStatusHistory toEntity(Account account, AccountStatus previousStatus, AccountStatus newStatus, String reason);
 }

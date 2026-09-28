@@ -5,8 +5,6 @@ import com.example.demo.dto.request.account.CreateAccountRequest;
 import com.example.demo.dto.request.account.UpdateAccountRequest;
 import com.example.demo.dto.response.AccountResponse;
 import com.example.demo.dto.response.AccountStatusHistoryResponse;
-import com.example.demo.dto.response.ApiResponse;
-import com.example.demo.dto.response.PageResponse;
 import com.example.demo.entity.enums.AccountStatus;
 import com.example.demo.entity.enums.AccountType;
 import com.example.demo.service.AccountService;
@@ -37,44 +35,43 @@ public class AccountController {
     private final AccountService accountService;
 
     @GetMapping
-    public ApiResponse<PageResponse<AccountResponse>> search(
+    public Page<AccountResponse> search(
             @RequestParam(required = false) String accountNumber,
             @RequestParam(required = false) Long customerId,
             @RequestParam(required = false) String cccd,
             @RequestParam(required = false) AccountStatus status,
             @RequestParam(required = false) AccountType accountType,
             @PageableDefault(size = 20, sort = "openedAt") Pageable pageable) {
-        Page<AccountResponse> page = accountService.searchAccounts(accountNumber, customerId, cccd, status,
+        return accountService.searchAccounts(accountNumber, customerId, cccd, status,
                 accountType, pageable);
-        return ApiResponse.ok(PageResponse.from(page));
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<AccountResponse> getById(@PathVariable Long id) {
-        return ApiResponse.ok(accountService.getAccountById(id));
+    public AccountResponse getById(@PathVariable Long id) {
+        return accountService.getAccountById(id);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<AccountResponse> create(@Valid @RequestBody CreateAccountRequest request) {
-        return ApiResponse.created(accountService.createAccount(request));
+    public AccountResponse create(@Valid @RequestBody CreateAccountRequest request) {
+        return accountService.createAccount(request);
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<AccountResponse> update(@PathVariable Long id,
-                                               @Valid @RequestBody UpdateAccountRequest request) {
-        return ApiResponse.ok(accountService.updateAccount(id, request));
+    public AccountResponse update(@PathVariable Long id,
+                                  @Valid @RequestBody UpdateAccountRequest request) {
+        return accountService.updateAccount(id, request);
     }
 
     @PatchMapping("/{id}/status")
-    public ApiResponse<AccountStatusHistoryResponse> changeStatus(
+    public AccountStatusHistoryResponse changeStatus(
             @PathVariable Long id,
             @Valid @RequestBody ChangeAccountStatusRequest request) {
-        return ApiResponse.ok(accountService.changeStatus(id, request));
+        return accountService.changeStatus(id, request);
     }
 
     @GetMapping("/{id}/status-history")
-    public ApiResponse<List<AccountStatusHistoryResponse>> getStatusHistory(@PathVariable Long id) {
-        return ApiResponse.ok(accountService.getStatusHistory(id));
+    public List<AccountStatusHistoryResponse> getStatusHistory(@PathVariable Long id) {
+        return accountService.getStatusHistory(id);
     }
 }

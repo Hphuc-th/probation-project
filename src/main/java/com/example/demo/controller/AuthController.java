@@ -1,8 +1,8 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.request.auth.LoginRequest;
+import com.example.demo.dto.request.auth.RefreshTokenRequest;
 import com.example.demo.dto.request.auth.RegisterRequest;
-import com.example.demo.dto.response.ApiResponse;
 import com.example.demo.dto.response.AuthResponse;
 import com.example.demo.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,55 +27,39 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    @Operation(summary = "User login")
-    public ApiResponse<AuthResponse> login(@Valid @RequestBody LoginRequest request, HttpServletResponse response) {
+    public AuthResponse login(@Valid @RequestBody LoginRequest request, HttpServletResponse response) {
         AuthResponse authResponse = authService.login(request);
-
-        String token = authResponse.getToken();
-
-        ResponseCookie cookie = ResponseCookie.from("jwt", token)
-            .httpOnly(true)
-            .secure(true)
-            .path("/")
-            .maxAge(Duration.ofMinutes(30))
-            .build();
-
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-
-        return ApiResponse.ok(authResponse);
+        setJwtCookie(response, authResponse.getToken(), 30);
+        return authResponse;
     }
 
     @PostMapping("/register")
-    @Operation(summary = "Register new customer")
-    public ApiResponse<AuthResponse> register(@Valid @RequestBody RegisterRequest request, HttpServletResponse response) {
+    public AuthResponse register(@Valid @RequestBody RegisterRequest request, HttpServletResponse response) {
         AuthResponse authResponse = authService.register(request);
+        setJwtCookie(response, authResponse.getToken(), 30);
+        return authResponse;
+    }
 
-        String token = authResponse.getToken();
-
-        ResponseCookie cookie = ResponseCookie.from("jwt", token)
-            .httpOnly(true)
-            .secure(true)
-            .path("/")
-            .maxAge(Duration.ofMinutes(30))
-            .build();
-
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-
-        return ApiResponse.ok(authResponse);
+    @PostMapping("/refresh")
+    @Operation(summary = "Refresh access token using refresh token")
+    public AuthResponse refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
+        return authService.refreshToken(request);
     }
 
     @PostMapping("/logout")
     @Operation(summary = "Logout - clear JWT cookie")
-    public ApiResponse<Void> logout(HttpServletResponse response) {
-        ResponseCookie cookie = ResponseCookie.from("jwt", "")
-            .httpOnly(true)
-            .secure(true)
-            .path("/")
-            .maxAge(0)
-            .build();
+    public Void logout(HttpServletResponse response) {
+        setJwtCookie(response, "", 0);
+        return null;
+    }
 
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-
-        return ApiResponse.ok(null, "Logged out successfully");
+    private void setJwtCookie(HttpServletResponse response, String token, int maxAgeMinutes) {
+        ResponseCookie cookie = ResponseCookie.from("jwt", token)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(Duration.ofMinutes(maxAgeMinutes))
+                .build();
+        response.addHeader("Set-Cookie", cookie.toString());
     }
 }

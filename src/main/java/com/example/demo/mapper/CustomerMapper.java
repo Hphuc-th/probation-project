@@ -1,44 +1,28 @@
 package com.example.demo.mapper;
 
+import com.example.demo.dto.request.auth.RegisterRequest;
 import com.example.demo.dto.request.customer.CreateCustomerRequest;
 import com.example.demo.dto.request.customer.UpdateCustomerRequest;
 import com.example.demo.dto.response.CustomerResponse;
 import com.example.demo.entity.Customer;
-import org.springframework.stereotype.Component;
+import org.mapstruct.BeanMapping;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 
-@Component
-public class CustomerMapper {
+@Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+public interface CustomerMapper {
 
-    public CustomerResponse toResponse(Customer customer) {
-        return CustomerResponse.builder()
-                .id(customer.getId())
-                .fullName(customer.getFullName())
-                .email(customer.getEmail())
-                .phone(customer.getPhone())
-                .location(customer.getLocation())
-                .cccd(customer.getCccd())
-                .status(customer.getStatus())
-                .createdAt(customer.getCreatedAt())
-                .build();
-    }
+    CustomerResponse toResponse(Customer customer);
 
-    public Customer toEntity(CreateCustomerRequest request) {
-        Customer customer = new Customer();
-        customer.setFullName(request.getFullName());
-        customer.setEmail(request.getEmail());
-        customer.setPhone(request.getPhone());
-        customer.setLocation(request.getLocation());
-        customer.setCccd(request.getCccd());
-        return customer;
-    }
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "status", constant = "ACTIVE")
+    @Mapping(target = "accounts", ignore = true)
+    Customer toEntity(CreateCustomerRequest request);
+    Customer toEntity(RegisterRequest request);
 
-    public void updateEntity(UpdateCustomerRequest request, Customer customer) {
-        customer.setFullName(request.getFullName());
-        customer.setEmail(request.getEmail());
-        customer.setPhone(request.getPhone());
-        customer.setLocation(request.getLocation());
-        if (request.getCccd() != null) {
-            customer.setCccd(request.getCccd());
-        }
-    }
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateEntity(UpdateCustomerRequest request, @MappingTarget Customer customer);
 }

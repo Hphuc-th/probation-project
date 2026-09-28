@@ -99,7 +99,6 @@ public class TransactionService {
         Transaction saved = insertAndFlush(account, TransactionType.DEPOSIT,
                 request.getAmount(), fee, request.getLocation());
         account.deposit(request.getAmount());
-        accountRepository.save(account);
         return transactionMapper.toResponse(saved);
     }
 
@@ -113,7 +112,6 @@ public class TransactionService {
         account.withdraw(request.getAmount().add(fee));
         Transaction saved = insertAndFlush(account, TransactionType.WITHDRAW,
                 request.getAmount(), fee, request.getLocation());
-        accountRepository.save(account);
         return transactionMapper.toResponse(saved);
     }
 
@@ -133,8 +131,6 @@ public class TransactionService {
         Transaction saved = insertAndFlush(from, TransactionType.TRANSFER,
                 request.getAmount(), fee, request.getLocation());
         to.deposit(request.getAmount());
-        accountRepository.save(from);
-        accountRepository.save(to);
         return transactionMapper.toResponse(saved);
     }
 
@@ -155,11 +151,7 @@ public class TransactionService {
         tx.setAmount(amount);
         tx.setFee(fee);
         tx.setLocation(location);
-        try {
-            return transactionRepository.saveAndFlush(tx);
-        } catch (DataAccessException e) {
-            throw mapTriggerError(e);
-        }
+       return transactionRepository.saveAndFlush(tx);
     }
 
     private RuntimeException mapTriggerError(DataAccessException e) {

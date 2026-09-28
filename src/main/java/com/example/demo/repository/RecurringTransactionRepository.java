@@ -35,4 +35,6 @@ public interface RecurringTransactionRepository extends JpaRepository<RecurringT
         WHERE rt.account.customer.id = :customerId
         """)
     Page<RecurringTransaction> findByCustomerId(Long customerId, Pageable pageable);
+
+    List<RecurringTransaction> findByStatus(RecurringTransactionStatus status);
 }

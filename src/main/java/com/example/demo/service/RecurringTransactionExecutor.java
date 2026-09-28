@@ -11,7 +11,6 @@ import com.example.demo.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
@@ -59,22 +58,9 @@ public class RecurringTransactionExecutor {
             log.info("Executed recurring transaction {} ({}) for account {}",
                     rt.getId(), rt.getTransactionType(), account.getAccountNumber());
 
-        } catch (BusinessException e) {
-            handleFailure(rt, e.getMessage());
-        } catch (DataAccessException e) {
-            String msg = e.getMessage() != null ? e.getMessage() : "Database error";
-            if (msg.contains("Insufficient balance")) {
-                handleFailure(rt, "Insufficient balance");
-            } else if (msg.contains("exceeds transaction limit")) {
-                handleFailure(rt, "Amount exceeds transaction limit");
-            } else if (msg.contains("Account is not active")) {
-                handleFailure(rt, "Account is not active");
-            } else {
-                handleFailure(rt, "Execution error: " + msg);
-            }
-        } catch (Exception e) {
-            handleFailure(rt, "Unexpected error: " + e.getMessage());
-        }
+        }  catch (Exception e) {
+    handleFailure(rt, e.getMessage());
+}
     }
 
     private void executeDeposit(RecurringTransaction rt, Account account) {

@@ -4,8 +4,6 @@ import com.example.demo.dto.request.transaction.CreateTransactionRequest;
 import com.example.demo.dto.request.transaction.DepositRequest;
 import com.example.demo.dto.request.transaction.TransferRequest;
 import com.example.demo.dto.request.transaction.WithdrawRequest;
-import com.example.demo.dto.response.ApiResponse;
-import com.example.demo.dto.response.PageResponse;
 import com.example.demo.dto.response.TransactionResponse;
 import com.example.demo.entity.enums.TransactionType;
 import com.example.demo.service.TransactionService;
@@ -34,7 +32,7 @@ public class TransactionController {
     private final TransactionService transactionService;
 
     @GetMapping
-    public ApiResponse<PageResponse<TransactionResponse>> search(
+    public Page<TransactionResponse> search(
             @RequestParam(required = false) Long accountId,
             @RequestParam(required = false) String accountNumber,
             @RequestParam(required = false) TransactionType transactionType,
@@ -43,37 +41,36 @@ public class TransactionController {
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDate,
             @PageableDefault(size = 20, sort = "createdAt") Pageable pageable) {
-        Page<TransactionResponse> page = transactionService.searchTransactions(accountId, accountNumber, transactionType,
+        return transactionService.searchTransactions(accountId, accountNumber, transactionType,
                 fromDate, toDate, pageable);
-        return ApiResponse.ok(PageResponse.from(page));
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<TransactionResponse> getById(@PathVariable Long id) {
-        return ApiResponse.ok(transactionService.getTransactionById(id));
+    public TransactionResponse getById(@PathVariable Long id) {
+        return transactionService.getTransactionById(id);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<TransactionResponse> create(@Valid @RequestBody CreateTransactionRequest request) {
-        return ApiResponse.created(transactionService.createTransaction(request));
+    public TransactionResponse create(@Valid @RequestBody CreateTransactionRequest request) {
+        return transactionService.createTransaction(request);
     }
 
     @PostMapping("/deposit")
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<TransactionResponse> deposit(@Valid @RequestBody DepositRequest request) {
-        return ApiResponse.created(transactionService.deposit(request));
+    public TransactionResponse deposit(@Valid @RequestBody DepositRequest request) {
+        return transactionService.deposit(request);
     }
 
     @PostMapping("/withdraw")
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<TransactionResponse> withdraw(@Valid @RequestBody WithdrawRequest request) {
-        return ApiResponse.created(transactionService.withdraw(request));
+    public TransactionResponse withdraw(@Valid @RequestBody WithdrawRequest request) {
+        return transactionService.withdraw(request);
     }
 
     @PostMapping("/transfer")
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<TransactionResponse> transfer(@Valid @RequestBody TransferRequest request) {
-        return ApiResponse.created(transactionService.transfer(request));
+    public TransactionResponse transfer(@Valid @RequestBody TransferRequest request) {
+        return transactionService.transfer(request);
     }
 }

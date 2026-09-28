@@ -65,23 +65,24 @@ public class CustomerService {
 
     @Transactional
     public CustomerResponse createCustomer(CreateCustomerRequest request) {
-        customerRepository.findByCccd(request.getCccd()).ifPresent(existing -> {
-            throw new BusinessException("CCCD already exists: " + request.getCccd());
-        });
+        checkCccdUnique(request.getCccd(), null);
         Customer customer = customerMapper.toEntity(request);
         return customerMapper.toResponse(customerRepository.save(customer));
     }
+
+    private void checkCccdUnique(String cccd, Long excludeId) {
+    customerRepository.findByCccd(cccd)
+        .filter(c -> excludeId == null || !c.getId().equals(excludeId))
+        .ifPresent(c -> { throw new BusinessException("CCCD already exists: " + cccd); });
+    }
+
 
     @Transactional
     public CustomerResponse updateCustomer(Long id, UpdateCustomerRequest request) {
         Customer customer = getEntity(id);
         if (request.getCccd() != null) {
-            customerRepository.findByCccd(request.getCccd())
-                .filter(existing -> !existing.getId().equals(id))
-                .ifPresent(existing -> {
-                    throw new BusinessException("CCCD already exists: " + request.getCccd());
-                });
-        }
+        checkCccdUnique(request.getCccd(), id);
+    }
         customerMapper.updateEntity(request, customer);
         if (request.getStatus() != null) {
             customer.setStatus(request.getStatus());
