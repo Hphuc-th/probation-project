@@ -18,6 +18,8 @@ import com.example.demo.repository.AccountHistoryRepository;
 import com.example.demo.repository.CustomerRepository;
 import com.example.demo.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -36,11 +38,20 @@ public class AccountService {
     private final AccountMapper accountMapper;
     private final AccountHistoryMapper historyMapper;
 
+    @Cacheable(value = "accounts", key = "#id")
+    @Transactional(readOnly = true)
+    public AccountResponse getAccountById(Long id) {
+        Account account = getEntity(id);
+        SecurityUtils.checkOwnershipOrAdmin(account.getCustomer().getId());
+        return accountMapper.toResponse(account);
+    }
+
+    @Cacheable(value = "accounts", key = "'search_' + #pageable.pageNumber + '_' + #pageable.pageSize + '_' + #accountNumber + '_' + #customerId + '_' + #cccd + '_' + #status + '_' + #accountType")
     @Transactional(readOnly = true)
     public Page<AccountResponse> searchAccounts(String accountNumber, Long customerId,
-                                                String cccd,
-                                                AccountStatus status, AccountType accountType,
-                                                Pageable pageable) {
+                                                 String cccd,
+                                                 AccountStatus status, AccountType accountType,
+                                                 Pageable pageable) {
         Specification<Account> spec = (root, query, cb) -> {
             var conjunction = cb.conjunction();
             if (SecurityUtils.isCustomer()) {
@@ -73,13 +84,7 @@ public class AccountService {
         return accountRepository.findAll(spec, pageable).map(accountMapper::toResponse);
     }
 
-    @Transactional(readOnly = true)
-    public AccountResponse getAccountById(Long id) {
-        Account account = getEntity(id);
-        SecurityUtils.checkOwnershipOrAdmin(account.getCustomer().getId());
-        return accountMapper.toResponse(account);
-    }
-
+    @CacheEvict(value = "accounts", allEntries = true)
     @Transactional
     public AccountResponse createAccount(CreateAccountRequest request) {
         Customer customer = customerRepository.findById(request.getCustomerId())
@@ -92,6 +97,7 @@ public class AccountService {
         return accountMapper.toResponse(saved);
     }
 
+    @CacheEvict(value = "accounts", allEntries = true)
     @Transactional
     public AccountResponse updateAccount(Long id, UpdateAccountRequest request) {
         Account account = getEntity(id);
@@ -110,6 +116,7 @@ public class AccountService {
         return accountMapper.toResponse(accountRepository.save(account));
     }
 
+    @CacheEvict(value = "accounts", allEntries = true)
     @Transactional
     public AccountStatusHistoryResponse changeStatus(Long id, ChangeAccountStatusRequest request) {
         Account account = getEntity(id);

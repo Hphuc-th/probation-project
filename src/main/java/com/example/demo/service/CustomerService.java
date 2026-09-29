@@ -12,6 +12,8 @@ import com.example.demo.mapper.CustomerMapper;
 import com.example.demo.repository.CustomerRepository;
 import com.example.demo.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -27,6 +29,15 @@ public class CustomerService {
     private final CustomerRepository customerRepository;
     private final CustomerMapper customerMapper;
 
+    @Cacheable(value = "customers", key = "#id")
+    @Transactional(readOnly = true)
+    //get customer by ID
+    public CustomerResponse getCustomerById(Long id) {
+        SecurityUtils.checkOwnershipOrAdmin(id);
+        return customerMapper.toResponse(getEntity(id));
+    }
+
+    @Cacheable(value = "customers", key = "'search_' + #pageable.pageNumber + '_' + #pageable.pageSize + '_' + #fullName + '_' + #email + '_' + #location + '_' + #status")
     @Transactional(readOnly = true)
     //get all customers
     public Page<CustomerResponse> searchCustomers(String fullName, String email, String location,
@@ -56,13 +67,8 @@ public class CustomerService {
         }
         return customerRepository.findAll(spec, pageable).map(customerMapper::toResponse);
     }
-    //get customer by ID
-    @Transactional(readOnly = true)
-    public CustomerResponse getCustomerById(Long id) {
-        SecurityUtils.checkOwnershipOrAdmin(id);
-        return customerMapper.toResponse(getEntity(id));
-    }
 
+    @CacheEvict(value = "customers", allEntries = true)
     @Transactional
     public CustomerResponse createCustomer(CreateCustomerRequest request) {
         checkCccdUnique(request.getCccd(), null);
@@ -77,6 +83,7 @@ public class CustomerService {
     }
 
 
+    @CacheEvict(value = "customers", allEntries = true)
     @Transactional
     public CustomerResponse updateCustomer(Long id, UpdateCustomerRequest request) {
         Customer customer = getEntity(id);
