@@ -14,6 +14,7 @@ databaseChangeLog:
         - addNotNullConstraint:
             tableName: customers
             columnName: cccd
+            columnDataType: VARCHAR(12)
         - addUniqueConstraint:
             tableName: customers
             columnNames: cccd

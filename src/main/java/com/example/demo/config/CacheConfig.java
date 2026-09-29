@@ -1,6 +1,7 @@
 package com.example.demo.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -9,7 +10,7 @@ import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.JacksonJsonRedisSerializer;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
@@ -18,12 +19,18 @@ import java.time.Duration;
 @EnableCaching
 public class CacheConfig {
 
+    private Jackson2JsonRedisSerializer<Object> createSerializer(ObjectMapper objectMapper) {
+        Jackson2JsonRedisSerializer<Object> serializer = new Jackson2JsonRedisSerializer<>(objectMapper, Object.class);
+        serializer.setObjectMapper(objectMapper);
+        return serializer;
+    }
+
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory, ObjectMapper objectMapper) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
         
-        JacksonJsonRedisSerializer<Object> serializer = new JacksonJsonRedisSerializer<>(objectMapper, (Class<Object>) Object.class);
+        Jackson2JsonRedisSerializer<Object> serializer = createSerializer(objectMapper);
         
         template.setKeySerializer(new StringRedisSerializer());
         template.setValueSerializer(serializer);
@@ -35,7 +42,7 @@ public class CacheConfig {
 
     @Bean
     public CacheManager cacheManager(RedisConnectionFactory connectionFactory, ObjectMapper objectMapper) {
-        JacksonJsonRedisSerializer<Object> serializer = new JacksonJsonRedisSerializer<>(objectMapper, (Class<Object>) Object.class);
+        Jackson2JsonRedisSerializer<Object> serializer = createSerializer(objectMapper);
         
         RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
             .entryTtl(Duration.ofMinutes(5))
