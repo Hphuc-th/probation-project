@@ -38,7 +38,8 @@ public class User implements UserDetails {
     @Column(name = "role", nullable = false)
     private Role role = Role.CUSTOMER;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id", unique = true)
     private Customer customer;
 
     @Override

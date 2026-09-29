@@ -54,14 +54,14 @@ public class Account {
     @Column(nullable = false)
     private AccountStatus status;
 
-    @OneToMany(mappedBy = "account")
-    private List<Transaction> transactions = new ArrayList<>();
+    @OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
+    private List<Transaction> transactionList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "account")
-    private List<RecurringTransaction> recurringTransactions = new ArrayList<>();
+    @OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
+    private List<RecurringTransaction> recurringTransactionList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "account")
-    private List<AccountStatusHistory> statusHistory = new ArrayList<>();
+    @OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
+    private List<AccountStatusHistory> statusHistoryList = new ArrayList<>();
 
     public void deposit(BigDecimal amount) {
         validatePositiveAmount(amount);

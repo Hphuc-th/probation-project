@@ -15,7 +15,7 @@ public interface AccountRepository extends JpaRepository<Account, Long>, JpaSpec
                    COUNT(DISTINCT a.id),
                    COUNT(t.id)
             FROM Account a
-            LEFT JOIN a.transactions t
+            LEFT JOIN a.transactionList t
             GROUP BY a.accountType
             """)
     List<Object[]> countAccountsAndTransactionsByType();

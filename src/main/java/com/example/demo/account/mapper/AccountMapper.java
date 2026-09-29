@@ -22,7 +22,9 @@ public interface AccountMapper {
     @Mapping(target = "customer", ignore = true)
     @Mapping(target = "openedAt", ignore = true)
     @Mapping(target = "status", ignore = true)
-    @Mapping(target = "transactions", ignore = true)
+    @Mapping(target = "transactionList", ignore = true)
+    @Mapping(target = "recurringTransactionList", ignore = true)
+    @Mapping(target = "statusHistoryList", ignore = true)
     Account toEntity(CreateAccountRequest request);
 
     @AfterMapping
